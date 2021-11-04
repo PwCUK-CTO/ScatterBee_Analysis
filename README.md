@@ -48,7 +48,7 @@ Next you will want to find out what obfuscation constant has been applied to the
 
 insert image
 
-The value in the lea instruction highlighted above is the subtraction value that is the key to the API call obfuscation. Copy/remmember this value and then go back to the `call loc_xyz; jmp eax/rax` function, place the cursor on the first instruction and then run the IDA Python script ScatterDecodeAPICalls.py.  
+The value in the lea instruction highlighted above is the subtraction value that is the key to the API call obfuscation. Copy/remember this value and then go back to the `call loc_xyz; jmp eax/rax` function, place the cursor on the first instruction and then run the IDA Python script ScatterDecodeAPICalls.py.  
 This script will ask the user for the subtraction value, once inputted the script will rename all the functions that call this lookup function to be the relevant API calls, this should automatically apply the correct type information to a lot of the binary.
 
 insert image of inputting sub value for this sample...
@@ -62,7 +62,7 @@ These are caused by IDA failing to recognise how the stack is handled during the
 
 insert stack mod image...
 
-To fix this, go to the line with the API call, press `Alt+K`, and set the value to be `0xc`. This will tell IDA that the stack has 3 arguments cleaned up as `GetModuleNameW` takes 3 arguments and is a `__stdcall` function and will allow IDA to recalculate the local stacks usage for the current function.
+To fix this, go to the line with the API call, press `Alt+K`, and set the value to be `0xc`. This will tell IDA that the stack has 3 arguments cleaned up as `GetModuleNameW` takes 3 arguments and is a `__stdcall` function and will allow IDA to recalculate the local stacks usage for the current function. Alternatively, explicitly setting the function prototype to the correct definition should also cleanup these cases.  
 
 ## Reversing a malicious ScatterBee payload
 ScatterBee payloads can either be encoded using a stream cipher, or AES with a key generated from MD5 hashing. Once you have identified a malicious file you can try to decode it using `ScatterDecodePayload.py`.  
