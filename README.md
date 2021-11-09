@@ -51,7 +51,7 @@ Undefine the code flowing into it with `u`, make a function in IDA at the `call`
 
 ![alt text](/Images/api_call_good.PNG?raw=true)
 
-Next you will want to find out what obfuscation constant has been applied to the API strings, navigate into the `call` function and there should be a function inside here that carries out an `XOR` operation along with `shl` instructions in a loop.
+Next you will want to find out what obfuscation constant has been applied to the API strings, navigate into the `call` function and there should be a function inside here that carries out an `XOR` operation along with `shr` instructions in a loop.
 
 ![alt text](/Images/xor_value.PNG?raw=true)
 
