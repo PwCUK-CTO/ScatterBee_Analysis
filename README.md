@@ -96,7 +96,7 @@ Next edit the first segment to ensure it is a CODE type and has RWX permissions.
 
 With the segments setup correctly you can then run the `ScatterRebuildPayload.py` script from the first instruction in the binary. This may take a few minutes depending on the size of the payload.  
 The output of the script may have lots of lines saying - `[INFO]: Unsupported call at 00059a5d` - this is due to the payload not having been patched yet by its first few functions.  
-Opening the result in IDA will allow you to follow the code for a handfull of calls before reaching instructions like the following:  
+Opening the result in IDA will allow you to follow the code for a handfull of calls before reaching instructions like the following that call into locations that do not exist:  
 
 ![alt text](/Images/bad_call.PNG?raw=true)
 
