@@ -1,7 +1,7 @@
 # ScatterBee_Analysis
 Scripts to aid analysis of files obfuscated with ScatterBee.
 
-### This repository of scripts is meant to be consumed in conjunction with the public PwC report on ScatterBee at: 
+### This repository of scripts is meant to be consumed in conjunction with the public PwC report on ScatterBee at: https://www.pwc.co.uk/issues/cyber-security-services/research/chasing-shadows.html
 When analysing a ScatterBee encoded file you will likely come across two types of file that are tricky to analyse - a loader, and a malicious payload.  
 Loaders are typically DLLs that somewhere contain a single jump into ScatterBee obfuscated code that will eventually load, decode and run a malicious payload.  
 The malicious payloads at rest on disk are stored in an obfuscated/encrypted format. The loader decodes them and jumps to the first byte of the decoded data, this first byte acts as the payloads entry point.  
