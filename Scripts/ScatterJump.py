@@ -71,6 +71,9 @@ def GetDestination(call_addr):
 #for each call location, find the most common call destination and check it starts with an xchg instruction
 #return the location if there are > 1000 calls, most code will not call the same function 1500 times
 def NeedScatterJumper():
+    if idaapi.find_binary(idaapi.cvar.inf.minEA, idaapi.cvar.inf.maxEA, "47 6f 20 62 75 69 6c 64 69 6e 66 3a", 16, 0) != idaapi.BADADDR:
+        #We found a Go build string that is in both gobfuscated and none gobfuscated binaries, don't use the decoder.
+        return idaapi.BADADDR
     max_val = 0
     max_key = idaapi.BADADDR
     calls = GetAllCallLocations()
@@ -95,7 +98,7 @@ def NeedScatterJumper():
             print ("found unknown start bytes: ", idaapi.get_bytes(max_key, 5))
     #check there were lots of calls to this function
     #this check is quite naive, but will only fp in weird circumstances and the user can still overrule it later.
-    #go binaries may be particularly susceptible to FPs
+    #go binaries may be particularly susceptible to FPs but we have ruled them out by default with the first check.
     if max_val > 1500:
         return max_key
     return idaapi.BADADDR
