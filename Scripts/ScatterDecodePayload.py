@@ -90,6 +90,7 @@ def Is64BitConfig(config_data, cur_loc):
         return False
     offset += 4
     offset += first_length
+
     second_start = struct.unpack("<I", config_data[offset:offset+4])[0]
     second_tag = second_start >> 24
     if second_tag not in valid_tags:
@@ -97,7 +98,17 @@ def Is64BitConfig(config_data, cur_loc):
     second_length = second_start & 0xffffff
     if second_length > (len(config_data)-first_length-8) or second_length == 0:
         return False
-    #we have now verified two consecutive tags, could do a third to really check as we have always seen at least 3 or check that it goes to the end of the file?
+    offset += 4
+    offset += first_length
+
+    third_start = struct.unpack("<I", config_data[offset:offset+4])[0]
+    third_tag = third_start >> 24
+    if third_tag not in valid_tags:
+        return False
+    third_length = third_start & 0xffffff
+    if third_length > (len(config_data)-first_length-second_length-8) or third_length == 0:
+        return False
+    #we have now verified three consecutive tags, could do a check that it goes to the end of the file instead?
     return True
 
 def Extract32BitConfig(config_data, filename, dumpflag):
