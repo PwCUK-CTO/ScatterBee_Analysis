@@ -16,6 +16,7 @@ limitations under the License.
 
 import sys, struct, hashlib
 from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 current_key = None
 known_sub_keys = [0x53335D9F, 0xEF819993, 0xe8589ff, 0xdc7f607, 0x443246ba, 0x56AB233F]
@@ -54,7 +55,7 @@ def DecryptAES(byte_arr, keystring):
     seed = byte_arr[-4:]
     key = DeriveKey(hashlib.md5(keystring+seed).digest())[:16]
     decryptor = AES.new(key, AES.MODE_CBC, iv=b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-    return decryptor.decrypt(byte_arr[:-4])
+    return decryptor.decrypt(pad(byte_arr[:-4], 16))
 
 def FindSubStrs(a_str, sub):
     start = 0
@@ -133,7 +134,7 @@ def DecryptAESConfigString(obf_bytes, keystring):
     seed2 = obf_bytes[3]
     key = DeriveKey(hashlib.md5(keystring+bytes([seed1])+bytes([seed2])).digest())[:16]
     decryptor = AES.new(key, AES.MODE_CBC, iv=b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-    decoded_str = decryptor.decrypt(data)
+    decoded_str = decryptor.decrypt(pad(data, 16))
     if decoded_str[-1] == decoded_str[-2] and decoded_str[-1] < 17:
         decoded_str = decoded_str[:-decoded_str[-1]]
     elif decoded_str[-1] == 1:
