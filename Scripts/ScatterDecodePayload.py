@@ -16,11 +16,14 @@ limitations under the License.
 
 import sys, struct, hashlib
 from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 current_key = None
 known_sub_keys = [0x53335D9F, 0xEF819993, 0xe8589ff, 0xdc7f607, 0x443246ba, 0x56AB233F]
 known_keystrings = [b"\x82\xe4\xe2\xfe\xf1\x55\xd0\x9e\x01\xb7\x98\xff\x31\x8c\x0a\xf8",
-        b"\x39\x88\xa1\x8d\xba\xe0\xd9\xf1\xb1\x5f\xaf\xc7\x62\x1e\x0d\x80"]
+        b"\x39\x88\xa1\x8d\xba\xe0\xd9\xf1\xb1\x5f\xaf\xc7\x62\x1e\x0d\x80",
+        b"\xf0\xc2\xc5\xc7\xd0\xd9\x5f\xd7\x58\xae\xab\xcb\x6b\x40\xc2\xcb",
+        b"\x65\x66\x0d\xaf\x65\x15\xd3\xb7\x55\x7c\x73\x64\x65\x59\x95\xf4"]
 
 def AddBytes(value):
     return ((value & 0xff) + ((value >> 8) & 0xff) + ((value >> 16) & 0xff) + ((value >> 24) & 0xff)) & 0xff
@@ -52,7 +55,7 @@ def DecryptAES(byte_arr, keystring):
     seed = byte_arr[-4:]
     key = DeriveKey(hashlib.md5(keystring+seed).digest())[:16]
     decryptor = AES.new(key, AES.MODE_CBC, iv=b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-    return decryptor.decrypt(byte_arr[:-4])
+    return decryptor.decrypt(pad(byte_arr[:-4], 16))
 
 def FindSubStrs(a_str, sub):
     start = 0
@@ -87,6 +90,7 @@ def Is64BitConfig(config_data, cur_loc):
         return False
     offset += 4
     offset += first_length
+
     second_start = struct.unpack("<I", config_data[offset:offset+4])[0]
     second_tag = second_start >> 24
     if second_tag not in valid_tags:
@@ -94,7 +98,17 @@ def Is64BitConfig(config_data, cur_loc):
     second_length = second_start & 0xffffff
     if second_length > (len(config_data)-first_length-8) or second_length == 0:
         return False
-    #we have now verified two consecutive tags, could do a third to really check as we have always seen at least 3 or check that it goes to the end of the file?
+    offset += 4
+    offset += first_length
+
+    third_start = struct.unpack("<I", config_data[offset:offset+4])[0]
+    third_tag = third_start >> 24
+    if third_tag not in valid_tags:
+        return False
+    third_length = third_start & 0xffffff
+    if third_length > (len(config_data)-first_length-second_length-8) or third_length == 0:
+        return False
+    #we have now verified three consecutive tags, could do a check that it goes to the end of the file instead?
     return True
 
 def Extract32BitConfig(config_data, filename, dumpflag):
@@ -131,7 +145,7 @@ def DecryptAESConfigString(obf_bytes, keystring):
     seed2 = obf_bytes[3]
     key = DeriveKey(hashlib.md5(keystring+bytes([seed1])+bytes([seed2])).digest())[:16]
     decryptor = AES.new(key, AES.MODE_CBC, iv=b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-    decoded_str = decryptor.decrypt(data)
+    decoded_str = decryptor.decrypt(pad(data, 16))
     if decoded_str[-1] == decoded_str[-2] and decoded_str[-1] < 17:
         decoded_str = decoded_str[:-decoded_str[-1]]
     elif decoded_str[-1] == 1:
